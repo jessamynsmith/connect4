@@ -5,24 +5,26 @@ import time #need this
 
 
 root = Tk() #Need this
-size = 500
-root.geometry("400x400") #Need this
 root.title("Connect Four") #need this
 
-#Since C4 is 6x7, making padding 400/4 allows
-#for a buffer of 100 pixels left/right/above/below
-#TicTacToe board
+# Normally 7 and 6, but could make bigger board
+cols = 7
+rows = 6
+square_size = 50
+padding = 100
+width = square_size * cols + 2 * padding  # Add padding on each side
+height = square_size * rows + 2 * padding  # Add padding on top and bottom
 
-padding = size / 50 # LEAVE ALONE
-#xSize = ySize = 0
-board = []
-#Normally 7 and 6, but could make bigger board
-rows=0
-cols=0
+root.geometry("%sx%s" % (width, height))  # Need this
+
+#create connect four board (not the graphics...just the
+#logical board representation)
+board = cols*[rows*[-1]]
+
 #records whether it's X or O's turn
 turn=0
 
-canvas = Canvas(root,width=size, height=size) #Need this
+canvas = Canvas(root, width=width, height=height)  # Need this
 
 #Frame rate is how often canvas will be updated
 # each second. For Connect four, 10 should be plenty.
@@ -39,35 +41,19 @@ def startDrawing():
 # it can still access global variables if needed.
 def drawThread():
 
-        #Width and height of each 'block' on the screen.
-        #This number is in pixels.
-        width = size / 10  #At 5, board went off screen
-        height = size / 10  #At 5, board went off screen
-
-        #declare canvas and root as global since
-        # we want to be able to interact with them.
-        global canvas, root
+        global canvas, root, rows, cols, padding, square_size
         print 'in draw thread'
         over = False
 
-        #five horizontal lines.  These lines won't be
-        # deleted since they should always be there.
-        #Why are the beginning and end points what they are?
-        canvas.create_line(width,height*2,width*8,height*2)
-        canvas.create_line(width,height*3,width*8,height*3)
-        canvas.create_line(width,height*4,width*8,height*4) # ADDED
-        canvas.create_line(width,height*5,width*8,height*5)  # ADDED
-        canvas.create_line(width,height*6,width*8,height*6)  # ADDED
-        
-        #six vertical lines.  These lines won't be
-        # deleted since they should always be there.
-        #Why are the beginning and end points what they are?
-        canvas.create_line(width*2,height,width*2,height*7)
-        canvas.create_line(width*3,height,width*3,height*7)
-        canvas.create_line(width*4,height,width*4,height*7)
-        canvas.create_line(width*5,height,width*5,height*7)
-        canvas.create_line(width*6,height,width*6,height*7)
-        canvas.create_line(width*7,height,width*7,height*7)     
+        # Draw horizontal lines
+        for i in range(rows + 1):
+                canvas.create_line(padding, padding + i * square_size,
+                                   padding + cols * square_size, padding + i * square_size)
+
+        # Draw vertical lines
+        for i in range(cols + 1):
+                canvas.create_line(padding + i * square_size, padding,
+                                   padding + i * square_size, padding + rows * square_size)
 
         #over becomes True when the game is over (win or draw)
         while over == False:
@@ -111,15 +97,15 @@ def drawThread():
                 #if X wins, put appropriate message on screen
                 if winner == 0:
                         over=True
-                        canvas.create_text(size/2,size/2, text="X WINS!",font=("helvetica","18"))
+                        canvas.create_text(width/2,height/2, text="X WINS!",font=("helvetica","18"))
                 #if O wins, put appropriate message on screen
                 elif winner == 1: 
                         over=True
-                        canvas.create_text(size/2,size/2, text="O WINS!", font=("helvetica","18"))
+                        canvas.create_text(width/2,height/2, text="O WINS!", font=("helvetica","18"))
                 #if draw, put appropriate message on screen
                 if draw() == True:
                         over=True
-                        canvas.create_text(size/2,size/2, text="DRAW!", font=("helvetica","18"))
+                        canvas.create_text(width/2,height/2, text="DRAW!", font=("helvetica","18"))
                         
 
 
@@ -165,50 +151,22 @@ def draw():
         #Otherwise, there must be a draw
         else:
                 return True
-
-
-
-
-#This function is called to set up the board. 7 and 6
-#are usually passed as arguments 
-def grid(x,y):
-
-        global cols,rows
-        i=0
-        #set number of columns and rows 
-        cols=x
-        rows=y
-
-        #initialize board with 42 -1's
-        while i<x:
-                #remember, board is a 2D list
-                board.append([])
-                j=0
-                while j < y:
-                        #-1 means no move yet
-                        board[i].append(-1)
-                        j+=1
-                i+=1
         
 
 #Assuming the user has clicked cell i,j, this
 #function checks to see if it's a valid move. If
 #so, it places the appropriate X or O there.
-def processMove(i,j):
+def processMove(col, row):
         global board, turn
 
-        #case 1 -- if i or j is off the board
-        if i < 0 or i >= len(board) or j < 0 or j>=len(board[i]):
+        print col, row
+        #case 1 -- already been clicked
+        if board[col][row] >= 0:
                 return
-        #case 2 -- already been clicked
-        elif board[i][j]>=0:
-                return
-        #case 3 -- if clicked cell is not already taken
-        elif board[i][j] <0:
-                board[i][j] = turn
+        #case 2 -- if clicked cell is not already taken
+        elif board[col][row] <0:
+                board[col][row] = turn
                 turn = (turn + 1) % 2
-
-
 
 
 #Function that handles mouse clicks. From the x,y coordinate
@@ -217,23 +175,16 @@ def processMove(i,j):
         
 def buttonPressed(event):
         #will want to change turn so declare global 
-        global turn
+        global padding, square_size, turn
 
-        #padding is 100 (for a 500x500 board). This is the
-        #size of each cell. Recall that / does integer math
-        #so that 323 / 100 is actually 3. If someone clicks at
-        #pixel 250,250, then i and j are both set to 2.
-        i = event.x / padding
-        j = event.y / padding
-        #debug print so we can see what i,j it calculates
-        print i, ' ' ,j
-        #If they click 2,2, then we want to change board[1][1]
-        processMove(i-1,j-1)
+        # Only process click if it is inside board
+        if (event.x > padding and event.x < (width - padding) and
+                            event.y > padding and event.y < (height - padding)):
+                # Calculate col and row based on event x and y
+                col = (event.x - padding) / square_size
+                row = (event.y - padding) / square_size
+                processMove(col, row)
 
-
-#create connect four board (not the graphics...just the
-#logical board representation)
-grid(6,7)
 
 #Bind left mouse button clicks to the buttonPressed function
 root.bind("<Button-1>",buttonPressed)
