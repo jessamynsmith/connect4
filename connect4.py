@@ -24,11 +24,6 @@ root.geometry("%sx%s" % (width, height))  # Why change from original "root.geome
 #create connect four board (not the graphics...just the
 #logical board representation)
 board = []  #  More rows & cols
-for col in range(cols):
-        col_data = []
-        for row in range(rows):
-                col_data.append(-1)
-        board.append(col_data)
 
 #records whether it's X or O's turn
 turn=0
@@ -275,7 +270,17 @@ def draw():
         #Otherwise, there must be a draw
         else:
                 return True
-        
+
+
+#This function is called to set up the board. 7 and 6
+#are usually passed as arguments
+def grid(cols, rows):
+        for col in range(cols):
+                col_data = []
+                for row in range(rows):
+                        col_data.append(-1)
+                board.append(col_data)
+
 
 #Assuming the user has clicked cell i,j, this
 #function checks to see if it's a valid move. If
@@ -315,6 +320,10 @@ def buttonPressed(event):
                 row = (event.y - padding) / square_size
                 processMove(col, row)
 
+
+#create connect four board (not the graphics...just the
+#logical board representation)
+grid(cols, rows)
 
 #Bind left mouse button clicks to the buttonPressed function
 root.bind("<Button-1>",buttonPressed)
