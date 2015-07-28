@@ -79,12 +79,13 @@ def drawThread():
                 # i and j.
                 while i < len(board):
                         j=0
+                        left = padding + i * square_size + 10
                         while j < len(board[i]):
-
+                                top = padding + j * square_size + 10
                                 if board[i][j] == 0:
-                                        lst2.append(canvas.create_text((i+1)*width + width/2 + 1,(j+1)*height + height/2 +1 ,text="X"))
+                                        lst2.append(canvas.create_text(left, top, text="X"))
                                 elif board[i][j] == 1:
-                                        lst2.append(canvas.create_text((i+1)*width + width/2 + 1,(j+1)*height + height/2 +1 ,text="O"))
+                                        lst2.append(canvas.create_text(left, top, text="O"))
                                 j+=1
                         
                         i+=1
@@ -165,7 +166,7 @@ def processMove(col, row):
         global board, rows, turn, padding, square_size
 
         #case 1 -- already been clicked
-        if board[row][col] >= 0:
+        if board[col][row] >= 0:
                 print "Location %s, %s has already been taken" % (col, row)
                 return
         #case 2 -- if clicked cell is not already taken
@@ -173,16 +174,10 @@ def processMove(col, row):
                 row_index = row
                 # Loop to find lowest empty row
                 while row_index < rows - 1:
-                        if board[row_index + 1][col] >= 0:
+                        if board[col][row_index + 1] >= 0:
                                 break
                         row_index += 1
-                board[row_index][col] = turn
-                left = padding + col * square_size + 10
-                top = padding + row_index * square_size + 10
-                if turn == 0:
-                        canvas.create_oval(left, top, left + 30, top + 30)
-                else:
-                        canvas.create_rectangle(left, top, left + 30, top + 30)
+                board[col][row_index] = turn
                 turn = (turn + 1) % 2
 
 
