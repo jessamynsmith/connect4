@@ -19,7 +19,12 @@ root.geometry("%sx%s" % (width, height))  # Need this
 
 #create connect four board (not the graphics...just the
 #logical board representation)
-board = cols*[rows*[-1]]
+board = []
+for col in range(cols):
+        col_data = []
+        for row in range(rows):
+                col_data.append(-1)
+        board.append(col_data)
 
 #records whether it's X or O's turn
 turn=0
@@ -157,15 +162,27 @@ def draw():
 #function checks to see if it's a valid move. If
 #so, it places the appropriate X or O there.
 def processMove(col, row):
-        global board, turn
+        global board, rows, turn, padding, square_size
 
-        print col, row
         #case 1 -- already been clicked
-        if board[col][row] >= 0:
+        if board[row][col] >= 0:
+                print "Location %s, %s has already been taken" % (col, row)
                 return
         #case 2 -- if clicked cell is not already taken
-        elif board[col][row] <0:
-                board[col][row] = turn
+        else:
+                row_index = row
+                # Loop to find lowest empty row
+                while row_index < rows - 1:
+                        if board[row_index + 1][col] >= 0:
+                                break
+                        row_index += 1
+                board[row_index][col] = turn
+                left = padding + col * square_size + 10
+                top = padding + row_index * square_size + 10
+                if turn == 0:
+                        canvas.create_oval(left, top, left + 30, top + 30)
+                else:
+                        canvas.create_rectangle(left, top, left + 30, top + 30)
                 turn = (turn + 1) % 2
 
 
